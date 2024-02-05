@@ -25,7 +25,7 @@ app.Run(async (context) =>
             
             var user = await request.ReadFromJsonAsync<UserData>();
             if (user != null)
-                message = $"Name: {user.Name}  Age: {user.Last_name}";
+                message = $"Name: {user.Name} Last name: {user.Last_name}";
         }
         catch { }
         await response.WriteAsJsonAsync(new { text = message });
@@ -43,7 +43,6 @@ app.Run(async (context) =>
     }
     else
     {
-        
         context.Response.StatusCode = 404;
         await context.Response.WriteAsync("Error 404");
     }
