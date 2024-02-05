@@ -19,16 +19,15 @@ app.Run(async (context) =>
     context.Response.ContentType = "text/html; charset=utf-8";
     if (path == "/form")
     {
-        var message = "Некорректные данные";   // содержание сообщения по умолчанию
+        var message = "Некорректные данные";
         try
         {
-            // пытаемся получить данные json
+            
             var user = await request.ReadFromJsonAsync<UserData>();
             if (user != null)
                 message = $"Name: {user.Name}  Age: {user.Last_name}";
         }
         catch { }
-        // отправляем пользователю данные
         await response.WriteAsJsonAsync(new { text = message });
     }
     else if(path == "/index")
@@ -52,7 +51,6 @@ app.Run(async (context) =>
 });
 
 app.Run();
-
 public class UserData
 {
     public string Name { get; set; }
