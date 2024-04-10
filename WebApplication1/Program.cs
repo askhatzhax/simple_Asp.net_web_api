@@ -108,7 +108,7 @@ app.MapPost("/api/users", async (User user, ApplicationContext db) =>
     return user;
 });
 
-app.MapPost("/login", async (string? returnUrl, HttpContext context) =>
+app.MapPost("/login", async (string? returnUrl, HttpContext context, ApplicationContext db) =>
 {
     // получаем из формы email и пароль
     var form = context.Request.Form;
@@ -120,11 +120,12 @@ app.MapPost("/login", async (string? returnUrl, HttpContext context) =>
     string password = form["password"];
 
     // находим пользователя 
-    Person? person = people.FirstOrDefault(p => p.Email == email && p.Password == password);
+    User? user = await db.Users.FirstOrDefaultAsync(u => u.Email == email && u.Password==password);
     // если пользователь не найден, отправляем статусный код 401
-    if (person is null) return Results.Unauthorized();
-
-    var claims = new List<Claim> { new Claim(ClaimTypes.Name, person.Email) };
+    //if (user is null) return Results.Unauthorized();
+    if (user is null) return Results.BadRequest("Email и/или пароль не правильный");
+    if (user is null) return Results.Unauthorized();
+    var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Email) };
     // создаем объект ClaimsIdentity
     ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, "Cookies");
     // установка аутентификационных куки
@@ -140,7 +141,7 @@ app.MapPost("/login", async (string? returnUrl, HttpContext context) =>
 
 app.MapPut("/api/users", async (User userData, ApplicationContext db) =>
 {
-    // получаем пользователя по id
+    // получаем пользователя sпо id
     var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userData.Id);
 
     // если не найден, отправляем статусный код и сообщение об ошибке
