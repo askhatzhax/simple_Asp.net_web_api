@@ -11,22 +11,12 @@ builder.Services.AddDbContext<ApplicationContext>(options => options.UseSqlServe
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options => options.LoginPath = "/login");
 builder.Services.AddAuthorization();
-
 var app = builder.Build();
-
 app.UseDefaultFiles();
 app.UseStaticFiles();
 // аутентификаци€ с помощью куки
-
-
 app.UseAuthentication();   // добавление middleware аутентификации 
 app.UseAuthorization();   // добавление middleware авторизации 
-
-var people = new List<Person>
-{
-    new Person("tom@gmail.com", "12345"),
-    new Person("bob@gmail.com", "55555")
-};
 app.MapGet("/login", async (HttpContext context) =>
 {
     context.Response.ContentType = "text/html; charset=utf-8";
@@ -85,29 +75,6 @@ app.MapGet("/api/users/{id:int}", async (int id, ApplicationContext db) =>
     return Results.Json(user);
 });
 
-
-app.MapDelete("/api/users/{id:int}", async (int id, ApplicationContext db) =>
-{
-    // получаем пользовател€ по id
-    User? user = await db.Users.FirstOrDefaultAsync(u => u.Id == id);
-
-    // если не найден, отправл€ем статусный код и сообщение об ошибке
-    if (user == null) return Results.NotFound(new { message = "ѕользователь не найден" });
-
-    // если пользователь найден, удал€ем его
-    db.Users.Remove(user);
-    await db.SaveChangesAsync();
-    return Results.Json(user);
-});
-
-app.MapPost("/api/users", async (User user, ApplicationContext db) =>
-{
-    // добавл€ем пользовател€ в массив
-    await db.Users.AddAsync(user);
-    await db.SaveChangesAsync();
-    return user;
-});
-
 app.MapPost("/login", async (string? returnUrl, HttpContext context, ApplicationContext db) =>
 {
     // получаем из формы email и пароль
@@ -139,27 +106,6 @@ app.MapPost("/login", async (string? returnUrl, HttpContext context, Application
     return Results.Content(content, "text/html");
 });
 
-app.MapPut("/api/users", async (User userData, ApplicationContext db) =>
-{
-    // получаем пользовател€ sпо id
-    var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userData.Id);
-
-    // если не найден, отправл€ем статусный код и сообщение об ошибке
-    if (user == null) return Results.NotFound(new { message = "ѕользователь не найден" });
-
-    // если пользователь найден, измен€ем его данные и отправл€ем обратно клиенту
-    user.Age = userData.Age;
-    user.Name = userData.Name;
-    await db.SaveChangesAsync();
-    return Results.Json(user);
-
-});
-app.MapGet("/logout", async (HttpContext context) =>
-    {
-        await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return Results.Redirect("/login");
-    });
 app.Run();
-record class Person(string Email, string Password);
 
 
